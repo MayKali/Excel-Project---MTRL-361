@@ -1,3 +1,3 @@
-# Excel-Projects - MTRL 361
+# VBA Excel-Macros - MTRL 361
 
 Compilation of coursework done in MTRL 361 - Modelling of Materials Processes 
