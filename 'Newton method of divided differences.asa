@@ -1,0 +1,79 @@
+'Newton method of divided differences
+
+Option Explicit
+
+Sub Newtons_Method()
+
+'Dim our variables, arrays
+Dim n, i, order As Integer
+Dim x(10), y(10), xi As Double
+
+'select our x data
+
+For i = 0 To 10
+    x(i) = Range("B" & i + 4)
+Next
+
+'select our y data
+
+For i = 0 To 10
+    y(i) = Range("D" & i + 4)
+Next
+
+'select our xi
+xi = Range("E1")
+
+'Message the output
+MsgBox "The estimate of f(x) is " & applyFormula(xi, x, y, n)
+
+
+End Sub
+Function prod(xi, x)
+
+Dim i, j, S As Integer
+
+S = 1
+
+For j = 0 To i
+    S = S * (xi - x(j))
+    
+    Next j
+    
+    
+prod = S
+
+
+End Function
+Function Divided_Table(x, y, n)
+Dim i, j As Integer
+Dim table(10, 10)
+
+For i = 0 To 8
+    For j = 0 To 8 - i
+    
+        y(j, i) = ((y(j, i - 1) - y(j + 1, i - 1)) / (x(j) - x(i + j)))
+        
+    Next j
+    
+Next i
+
+
+End Function
+
+Function applyFormula(xi, x, y, n)
+
+Dim sum As Double
+Dim i As Integer
+
+sum = y(0, 0)
+
+For i = 0 To 8
+    sum = sum + (prod(xi, x) * y(0, i))
+    
+    Next i
+    
+
+applyFormula = sum
+
+
+End Function
