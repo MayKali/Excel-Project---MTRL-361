@@ -1,0 +1,59 @@
+'Lagrange Interpolation
+
+
+Option Explicit
+
+Sub Lagrange_Interpolation()
+
+'Dim our variables, arrays
+Dim n, i, order As Integer
+Dim x(10), y(10), xi As Double
+
+'select our x data
+
+For i = 0 To 10
+    x(i) = Range("B" & i + 4)
+Next
+
+'select our y data
+
+For i = 0 To 10
+    y(i) = Range("D" & i + 4)
+Next
+
+'select our xi
+xi = Range("E1")
+
+'Select the order of our lagrange polynomial
+order = Range("G1")
+
+'Message the output
+MsgBox "The estimate of f(x) is " & Lagrange(x, y, order, xi)
+
+    
+End Sub
+
+Function Lagrange(x, y, order, xi)
+Dim i, j As Integer
+Dim sum, prod As Double
+
+'initialize the sum
+sum = 0
+
+For i = 0 To order
+prod = y(i)
+
+    For j = 0 To order
+
+        If i <> j Then
+            prod = prod * (xi - x(j)) / (x(i) - x(j))
+        End If
+
+    Next j
+    sum = sum + prod
+Next i
+
+Lagrange = sum
+
+End Function
+
