@@ -1,0 +1,449 @@
+'Heat Transfer Rates
+Private Qg_eb, Qg_ew, Qcw_cb, Qew_eb, Q_shell, Qb, Qg As Double
+'Mass Rates
+Private Mdot_b, Mdot_g As Double
+Private Mdot_bCaCo3, Mdot_bCaO, Initial_Mdot_bCaCO3, Initial_Mdot_bCaO
+'Convective Heat Transfer Coefficients
+Private hCg_ew, hCg_eb, hcw_cb, h_shell As Double
+'Radiative Heat Transfer Coefficients
+Private hRew_eb, hRg_ew, hRg_eb As Double
+'Lengths
+Private L_eb, L_ew, L_cw As Double
+'Shell Resistance
+Private R_w As Double
+'Emissivities
+Private Eg, Eew, Egeb, Eeb As Double
+'Temperatures
+Private T_b, T_g, T_hf, T_a As Double
+'Specific Heats
+Private Cp_g, Cp_b As Double
+'Miscellaneous
+Private Q_cal, k As Double
+'Temperature Rates
+Private dTgdx, dTbdx As Double
+'Iterations
+Private delta_X, X, L_stop As Double
+'Edit: Assign global phi and Initial_Mdot_bCaCO3
+Private phi  As Double
+'End of declaring global variables
+Private gammadot, Qr, Qh As Double
+Private dm_Bdx, dm_Gdx As Double
+'Save the previous value
+Private Mdot_b_old, Mdot_g_old As Double
+Private T_g_old, T_b_old, Mdot_bCaCo3_old, Mdot_bCaO_old, T_hf_old As Double
+'RK coefficients
+Private K1Tg, K2Tg, K3Tg, K4Tg As Double
+Private K1Tb, K2Tb, K3Tb, K4Tb As Double
+Private K1mg, K2mg, K3mg, K4mg As Double
+Private K1mb, K2mb, K3mb, K4mb As Double
+
+
+
+Sub MainEuler()
+
+'initializing variables
+delta_X = Worksheets("Setup").Range("I7").Value
+    
+Mdot_b = Worksheets("Setup").Range("C7").Value
+Mdot_g = Worksheets("Setup").Range("D7").Value
+
+T_b = Worksheets("Setup").Range("E7").Value
+T_g = Worksheets("Setup").Range("F7").Value
+T_a = Worksheets("Setup").Range("G7").Value
+
+L_cw = Worksheets("Setup").Range("G11").Value
+L_ew = Worksheets("Setup").Range("H11").Value
+L_eb = Worksheets("Setup").Range("I11").Value
+L_stop = Worksheets("Setup").Range("H7").Value
+
+hCg_eb = Worksheets("Setup").Range("C15").Value
+hCg_ew = Worksheets("Setup").Range("D15").Value
+hcw_cb = Worksheets("Setup").Range("E15").Value
+h_shell = Worksheets("Setup").Range("F15").Value
+
+Cp_b = Worksheets("Setup").Range("C19").Value
+Cp_g = Worksheets("Setup").Range("D19").Value
+    
+k = Worksheets("Setup").Range("H19").Value
+R_w = Worksheets("Setup").Range("I19").Value
+    
+Q_cal = Worksheets("Setup").Range("G14").Value
+    
+Eeb = Worksheets("Setup").Range("E19").Value
+Eew = Worksheets("Setup").Range("F19").Value
+Eg = Worksheets("Setup").Range("G19").Value
+
+X = 0
+phi = 0
+
+Mdot_bCaCo3 = Mdot_b
+Mdot_bCaO = 0
+Initial_Mdot_bCaCO3 = Mdot_bCaCo3
+
+Do While X <= 90
+    
+    
+    
+    Worksheets("Euler").Cells(5 + X, 2).Value = X
+    
+    Worksheets("Euler").Cells(5 + X, 3).Value = (T_b - 273.15)
+    
+    Worksheets("Euler").Cells(5 + X, 4).Value = (T_g - 273.15)
+    
+    Worksheets("Euler").Cells(5 + X, 6).Value = (phi * 100)
+    
+    Euler
+    
+    Worksheets("Euler").Cells(5 + X, 7).Value = hRg_ew
+    
+    Worksheets("Euler").Cells(5 + X, 8).Value = hRg_eb
+    
+    Worksheets("Euler").Cells(5 + X, 9).Value = Mdot_b
+    
+    Worksheets("Euler").Cells(5 + X, 10).Value = Mdot_g
+    
+   'calling this subroutine
+    
+    Worksheets("Euler").Cells(5 + X, 5).Value = (T_hf - 273.15)
+    
+    X = X + delta_X
+    
+    Loop
+
+End Sub
+
+
+Sub MainRK()
+
+'initializing variables
+delta_X = Worksheets("Setup").Range("I7").Value
+    
+Mdot_b = Worksheets("Setup").Range("C7").Value
+Mdot_g = Worksheets("Setup").Range("D7").Value
+
+T_b = Worksheets("Setup").Range("E7").Value
+T_g = Worksheets("Setup").Range("F7").Value
+T_a = Worksheets("Setup").Range("G7").Value
+
+L_cw = Worksheets("Setup").Range("G11").Value
+L_ew = Worksheets("Setup").Range("H11").Value
+L_eb = Worksheets("Setup").Range("I11").Value
+L_stop = Worksheets("Setup").Range("H7").Value
+
+hCg_eb = Worksheets("Setup").Range("C15").Value
+hCg_ew = Worksheets("Setup").Range("D15").Value
+hcw_cb = Worksheets("Setup").Range("E15").Value
+h_shell = Worksheets("Setup").Range("F15").Value
+
+Cp_b = Worksheets("Setup").Range("C19").Value
+Cp_g = Worksheets("Setup").Range("D19").Value
+    
+k = Worksheets("Setup").Range("H19").Value
+R_w = Worksheets("Setup").Range("I19").Value
+    
+Q_cal = Worksheets("Setup").Range("G14").Value
+    
+Eeb = Worksheets("Setup").Range("E19").Value
+Eew = Worksheets("Setup").Range("F19").Value
+Eg = Worksheets("Setup").Range("G19").Value
+
+X = 0
+phi = 0
+
+Mdot_bCaCo3 = Mdot_b
+Mdot_bCaO = 0
+Initial_Mdot_bCaCO3 = Mdot_bCaCo3
+
+HeatTransferRates
+
+Do While X <= 90
+
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 2).Value = X
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 3).Value = (T_b - 273.15)
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 4).Value = (T_g - 273.15)
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 6).Value = (phi * 100)
+    
+    RK4th
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 7).Value = hRew_eb
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 8).Value = hRg_eb
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 9).Value = Mdot_b
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 10).Value = Mdot_g
+    
+  'calling this subroutine
+    
+    Worksheets("Runge-Kutta").Cells(5 + X, 5).Value = (T_hf - 273.15)
+    
+    X = X + delta_X
+    
+    Loop
+
+End Sub
+
+Sub Euler()
+
+'   Calculates the T_g, T_b and m_b for the next slice
+'   Updates massflows by calling massflow() sub
+'
+'   Parameters
+'
+'       Refractory Heat Balance : Calculates the Thg
+'
+'       Thf : Updates the variables related to temperature
+
+RefractoryHeatBalance 'calling this subroutine
+
+dTgdx = Qg / (Mdot_g * Cp_g)
+dTbdx = Qb / (Mdot_b * Cp_b)
+
+T_g = T_g + dTgdx * delta_X    'Edited  Tg_N can be replaced by Tg since Tg has already been printed
+T_b = T_b + dTbdx * delta_X  'Same with Tb_N and Mdot_bn
+
+'If T >= 820 then 85% of Qb goes to calcination
+
+dm_Bdx = -gammadot * (44# / 100.1)
+dm_Gdx = -1# * dm_Bdx
+
+
+Mdot_b = Mdot_b + dm_Bdx * delta_X
+Mdot_g = Mdot_g + dm_Gdx * delta_X
+'code for Euler() which will calculate updated values for everything
+
+
+Massflow  'calling this subroutine
+
+    
+End Sub
+
+
+Sub RK4th()
+
+'Save the previous value
+T_g_old = T_g
+T_b_old = T_b
+T_hf_old = T_hf
+Mdot_b_old = Mdot_b
+Mdot_g_old = Mdot_g
+Mdot_bCaCo3_old = Mdot_bCaCo3
+Mdot_bCaO_old = Mdot_bCaO
+
+'calculate K1 for gas and bed
+'Calling RefractoryHeatBalance to update T_hf
+RefractoryHeatBalance
+
+K1Tb = Qb / (Mdot_b * Cp_b)
+K1Tg = Qg / (Mdot_g * Cp_g)
+
+T_b = T_b_old + K1Tb * delta_X
+T_g = T_g_old + K1Tg * delta_X
+
+K1mb = -gammadot * (44 / 100.1)
+K1mg = -1 * K1mb
+
+Mdot_b = Mdot_b_old + K1mb * delta_X
+Mdot_g = Mdot_g_old + K1mg * delta_X
+'hardcode mass flow
+Mdot_bCaCo3 = Mdot_bCaCo3_old + (Mdot_b + (K1mb) * delta_X - Mdot_b) * (100.1 / 44)
+Mdot_bCaO = Mdot_bCaO_old + (Mdot_b + (K1mb) * delta_X - Mdot_b) * (56.1 / 44)
+phi = 1 - (Mdot_bCaCo3 / Initial_Mdot_bCaCO3)
+
+
+'calculate K2 for gas and bed
+'Calling RefractoryHeatBalance to update T_hf
+RefractoryHeatBalance
+K2Tb = Qb / (Mdot_b * Cp_b)
+K2Tg = Qg / (Mdot_g * Cp_g)
+
+T_b = T_b_old + K2Tb * delta_X / 2
+T_g = T_g_old + K2Tg * delta_X / 2
+
+K2mb = -gammadot * (44 / 100.1)
+K2mg = -1 * K2mb
+
+Mdot_b = Mdot_b_old + K2mb * delta_X / 2
+Mdot_g = Mdot_g_old + K2mg * delta_X / 2
+'hardcode mass flow
+Mdot_bCaCo3 = Mdot_bCaCo3_old + (Mdot_b + (K2mb) * delta_X / 2 - Mdot_b) * (100.1 / 44)
+Mdot_bCaO = Mdot_bCaO_old + (Mdot_b + (K2mb) * delta_X / 2 - Mdot_b) * (56.1 / 44)
+phi = 1 - (Mdot_bCaCo3 / Initial_Mdot_bCaCO3)
+
+
+'calculate K3 for gas and bed
+'Calling RefractoryHeatBalance to update T_hf
+RefractoryHeatBalance
+K3Tb = Qb / (Mdot_b * Cp_b)
+K3Tg = Qg / (Mdot_g * Cp_g)
+
+T_b = T_b_old + K3Tb * delta_X / 2
+T_g = T_g_old + K3Tg * delta_X / 2
+
+K3mb = -gammadot * (44 / 100.1)
+K3mg = -1 * K3mb
+
+Mdot_b = Mdot_b_old + K3mb * delta_X / 2
+Mdot_g = Mdot_g_old + K3mg * delta_X / 2
+'hardcode mass flow
+Mdot_bCaCo3 = Mdot_bCaCo3_old + (Mdot_b + (K3mb) * delta_X / 2 - Mdot_b) * (100.1 / 44)
+Mdot_bCaO = Mdot_bCaO_old + (Mdot_b + (K3mb) * delta_X / 2 - Mdot_b) * (56.1 / 44)
+phi = 1 - (Mdot_bCaCo3 / Initial_Mdot_bCaCO3)
+
+
+'calculate K4 for gas and bed
+'Calling RefractoryHeatBalance to update T_hf
+RefractoryHeatBalance
+K4Tb = Qb / (Mdot_b * Cp_b)
+K4Tg = Qg / (Mdot_g * Cp_g)
+
+T_b = T_b_old + K4Tb * delta_X
+T_g = T_g_old + K4Tg * delta_X
+
+K4mb = -gammadot * (44 / 100.1)
+K4mg = -1 * K3mb
+
+Mdot_b = Mdot_b_old + K4mb * delta_X
+Mdot_g = Mdot_g_old + K4mg * delta_X
+'hardcode mass flow
+Mdot_bCaCo3 = Mdot_bCaCo3_old + (Mdot_b + (K4mb) * delta_X - Mdot_b) * (100.1 / 44)
+Mdot_bCaO = Mdot_bCaO_old + (Mdot_b + (K4mb) * delta_X - Mdot_b) * (56.1 / 44)
+phi = 1 - (Mdot_bCaCo3 / Initial_Mdot_bCaCO3)
+
+dm_Bdx = -gammadot * (44# / 100.1)
+dm_Gdx = -1# * dm_Bdx
+
+'Calling RefractoryHeatBalance to update T_hf
+RefractoryHeatBalance
+'Use RK coefficient to calculate approximate Temperature
+T_b = T_b_old + 1 / 6 * (K1Tb + 2 * K2Tb + 2 * K3Tb + K4Tb) * delta_X
+T_g = T_g_old + 1 / 6 * (K1Tg + 2 * K2Tg + 2 * K3Tg + K4Tg) * delta_X
+Mdot_b = Mdot_b_old + 1 / 6 * (K1mb + 2 * K2mb + 2 * K3mb + K4mb) * delta_X
+Mdot_g = Mdot_g_old + 1 / 6 * (K1mg + 2 * K2mg + 2 * K3mg + K4mg) * delta_X
+
+Mdot_bCaCo3 = Mdot_bCaCo3_old + (Mdot_b + (dm_Bdx) * delta_X - Mdot_b) * (100.1 / 44)
+Mdot_bCaO = Mdot_bCaO_old + (Mdot_b + (dm_Bdx) * delta_X - Mdot_b) * (56.1 / 44)
+phi = 1 - (Mdot_bCaCo3 / Initial_Mdot_bCaCO3)
+
+
+End Sub
+
+
+Sub RefractoryHeatBalance()
+
+'   Uses the Bisection method to calculate T_hf for the current values of Tg and Tb
+'   Calls HeatTransferRates to calculate Qb, Qg, Qew_eb, Qcw_cb & Q_shell
+
+Dim left As Double
+Dim right As Double
+Dim mid As Double
+Dim QR_balance As Double
+Dim QL_balance As Double
+Dim QM_balance As Double
+
+'   Assign the lower and upper bounds from the excel spreadsheet
+
+left = T_b + 1
+right = T_g - 1
+
+Do While Abs(right - left) >= 0.0001
+    
+    T_hf = right
+    
+    HeatTransferRates
+    
+    QR_balance = Qew_eb + Qcw_cb + Q_shell - Qg_ew
+       
+    mid = (left + right) / 2
+    
+    T_hf = mid
+    
+    HeatTransferRates
+    
+    QM_balance = Qew_eb + Qcw_cb + Q_shell - Qg_ew
+    
+    
+    If QM_balance * QR_balance > 0 Then right = mid Else left = mid
+    
+Loop
+
+    T_hf = mid
+
+    HeatTransferRates
+    
+    
+    End Sub
+    
+
+
+'Summary of Heat Balance
+
+    'Q_g = Mdot_g * Cpg * dTgdx
+    'Q_b = Mdot_b * Cpb * dTbdx
+    
+Sub HeatTransferRates()
+    
+    Dim C, T_diff_hfb, T_diff_ghf, T_diff_gb, A, B, D As Double
+    
+    'Heat Transfer Coefficients (W/m^2 * K)
+    
+    C = (5.67 * (10 ^ (-8)))
+    T_diff_hfb = ((T_hf ^ 4) - (T_b ^ 4))
+    T_diff_ghf = ((T_g ^ 4) - (T_hf ^ 4))
+    T_diff_gb = ((T_g ^ 4) - (T_b ^ 4))
+    
+    A = (C * (1 - Eg) * T_diff_hfb * L_ew)
+    B = ((1 / Eeb) + ((L_eb / L_ew) * ((1 / Eew) - 1)))
+    D = L_ew * (T_hf - T_b)
+    
+    
+    hRew_eb = A / (B * D)
+    hRg_ew = (C * Eg * T_diff_ghf) / (T_g - T_hf)
+    hRg_eb = (C * Eg * T_diff_gb) / (T_g - T_b)
+
+
+    Qg_eb = L_eb * (hCg_eb + hRg_eb) * (T_g - T_b)
+    Qg_ew = L_ew * (hCg_ew + hRg_ew) * (T_g - T_hf)
+    Qcw_cb = L_cw * hcw_cb * (T_hf - T_b)
+    Qew_eb = L_ew * hRew_eb * (T_hf - T_b)
+    Q_shell = (T_hf - T_a) / R_w
+
+    Qg = Qg_ew + Qg_eb
+    Qb = Qg_eb + Qew_eb + Qcw_cb
+    
+
+If T_b >= (820 + 273) Then
+    
+    Qr = 0.85 * Qb
+    Qh = 0.15 * Qb
+    Qb = Qh
+    gammadot = Qr / Q_cal
+    
+Else
+    Qr = 0
+    gammadot = 0
+End If
+
+    
+End Sub
+
+
+Sub Massflow()
+'Updates mass flowrates
+
+'Edit: I use the new value to replace the value assigned in the global mass flow variable.
+'Calculates m_g for the next slice explicitly
+
+        
+Mdot_bCaCo3 = Mdot_bCaCo3 + (Mdot_b + (dm_Bdx) * delta_X - Mdot_b) * (100.1 / 44)
+    
+Mdot_bCaO = Mdot_bCaO + (Mdot_b + (dm_Bdx) * delta_X - Mdot_b) * (56.1 / 44)
+        
+phi = 1 - (Mdot_bCaCo3 / Initial_Mdot_bCaCO3)
+   
+End Sub
+

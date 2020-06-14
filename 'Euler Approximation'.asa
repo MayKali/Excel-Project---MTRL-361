@@ -1,0 +1,41 @@
+'Euler Approximation'
+Function dy(t As Double, w As Double) As Double
+
+dy = w * (1 - w)
+
+End Function
+
+
+Sub Euler()
+
+Dim h As Double
+Dim y(1 To 18, 1 To 1) As Double
+Dim t0 As Double
+
+'Read the ranges of t from the excel spreadsheet
+
+t0 = [EulerT0]
+t1 = [EulerT1]
+
+'Initialize the step size and initial condition
+
+h = 0.5
+
+y(1, 1) = 0.5
+
+'Loop through the array, adding the approximated yi at each loop
+
+For i = 1 To 16
+    
+    y(i + 1, 1) = y(i, 1) + h * dy(t0, y(i, 1))
+    
+    Next i
+
+'Printing the array onto a column in the excel spreadsheet
+
+Dim bob As Range
+Set bob = ActiveWorkbook.Worksheets("Euler").Range("D13:D29")
+bob = y
+
+
+End Sub
